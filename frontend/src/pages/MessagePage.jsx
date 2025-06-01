@@ -15,6 +15,9 @@ const MessagePage = () => {
   const { user: { id: currentUserId, role: currentUserRole } } = useUserStore();
   const { onlineUsers, isConnected } = useSocket();
 
+  const currentUserId = user?.id;
+  const currentUserRole = user?.role;
+
   useEffect(() => {
     const loadData = async () => {
       try {
