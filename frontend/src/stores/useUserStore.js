@@ -40,7 +40,7 @@ export const useUserStore = create((set) => ({
             toast.error(error.response.data?.error || "An error occurred");
         }
     },
-    editProfile: async ({ name, email, phoneNumber, department }) => {
+    editProfile: async ({ name, email, phoneNumber, department, role }) => {
         set({ loading: true });
 
         try {
@@ -48,11 +48,12 @@ export const useUserStore = create((set) => ({
                 name,
                 phoneNumber,
                 department,
-                email
+                email,
+                role
             });
 
             if (res.data.success) {
-                set((state) => ({ user: { ...state.user, name, phoneNumber, department, email }, loading: false }));
+                set((state) => ({ user: { ...state.user, name, phoneNumber, department, email, role }, loading: false }));
                 toast.success(res.data.message);
             }
         } catch (error) {
@@ -75,6 +76,7 @@ export const useUserStore = create((set) => ({
 
         try {
             await axios.post('/auth/logout');
+            localStorage.removeItem('isSidebarHidden');
             set({ user: null, loading: false});
         } catch (error) {
             set({ loading: false });

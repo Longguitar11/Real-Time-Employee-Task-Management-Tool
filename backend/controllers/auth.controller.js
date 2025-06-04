@@ -102,9 +102,9 @@ export const validateAccessCode = async (req, res) => {
       const { accessToken, refreshToken } = generateTokens(userDoc.id);
       setCookies(res, accessToken, refreshToken);
 
-      res.json({ success: true, user: { id: userDoc.id, email, role: userData.role } });
+      res.json({ success: true, user: userDoc.data() });
     } else {
-      res.status(400).json({ success: false, message: "Invalid access code" });
+      res.status(400).json({ success: false, error: "Invalid access code" });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -153,7 +153,7 @@ export const getProfile = async (req, res) => {
 
 export const editProfile = async (req, res) => {
   const userId = req.user.id;
-  const { name, email, phoneNumber, department } = req.body;
+  const { name, email, phoneNumber, department, role } = req.body;
 
   try {
     const employeeDoc = await db.collection('users').doc(userId).get();
@@ -185,6 +185,7 @@ export const editProfile = async (req, res) => {
         name,
         phoneNumber,
         department,
+        role,
         isVerified: false,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
@@ -207,6 +208,7 @@ export const editProfile = async (req, res) => {
         name,
         phoneNumber,
         department,
+        role,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
     }
@@ -220,10 +222,7 @@ export const editProfile = async (req, res) => {
 
   } catch (error) {
     console.error("Error updating profile:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to update profile. Please try again later."
-    });
+    res.status(500).json({ error: error.message });
   }
 }
 

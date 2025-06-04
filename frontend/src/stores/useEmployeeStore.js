@@ -5,8 +5,9 @@ import axios from "../libs/axios"
 export const userEmployeeStore = create((set) => ({
     employees: null,
     loading: false,
+    actionLoading: false,
     createEmployee: async ({ name, email, phoneNumber, role, department }) => {
-        set({ loading: true });
+        set({ actionLoading: true });
 
         try {
             const res = await axios.post('/employees/create', {
@@ -18,12 +19,12 @@ export const userEmployeeStore = create((set) => ({
             });
 
             if (res.data.success) {
-                set((state) =>  ({ employees: [...state.employees, res.data.employee], loading: false }));
+                set((state) =>  ({ employees: [...state.employees, res.data.employee], actionLoading: false }));
                 toast.success("Create employee successfully");
             }
 
         } catch (error) {
-            set({ loading: false });
+            set({ actionLoading: false });
             console.log(error);
             toast.error(error.response.data?.error || "An error occurred");
         }
@@ -61,7 +62,7 @@ export const userEmployeeStore = create((set) => ({
         }
     },
     updateEmployee: async ({ id, email, phoneNumber, name, role, department }) => {
-        set({ loading: true });
+        set({ actionLoading: true });
 
         try {
             const res = await axios.post(`/employees/${id}`, {
@@ -75,12 +76,12 @@ export const userEmployeeStore = create((set) => ({
             if (res.data.success) {
                 set((state) => ({
                     employees: state.employees.map(employee => employee.id === id ? { ...employee, email, phoneNumber, name, role, department } : employee),
-                    loading: false
+                    actionLoading: false
                 }));
                 toast.success("Update employee successfully");
             }
         } catch (error) {
-            set({ loading: false });
+            set({ actionLoading: false });
             toast.error(error.response.data?.error || "An error occurred");
         }
     },
@@ -90,11 +91,11 @@ export const userEmployeeStore = create((set) => ({
         try {
             const res = await axios.delete(`/employees/${id}`);
             if (res.data.success) {
-                set((state) => ({ employees: state.employees.filter(employee => employee.id !== id), loading: false }));
+                set((state) => ({ employees: state.employees.filter(employee => employee.id !== id), actionLoading: false }));
                 toast.success("Delete employee successfully");
             }
         } catch (error) {
-            set({ loading: false });
+            set({ actionLoading: false });
             toast.error(error.response.data?.error || "An error occurred");
         }
     },

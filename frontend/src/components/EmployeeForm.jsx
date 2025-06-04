@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { DEPARTMENTS } from '../constants/departments';
+import { ROLES } from '../constants/roles';
 
 const EmployeeForm = ({ type, employee, onSubmit, isLoading, setIsOpen }) => {
 
@@ -17,9 +18,8 @@ const EmployeeForm = ({ type, employee, onSubmit, isLoading, setIsOpen }) => {
     }
 
     return (
-        <div className='fixed inset-0 bg-gray-300/50 flex items-center justify-center z-50' onClick={() => setIsOpen({ type: 'create', open: false })}>
+        <div className='fixed inset-0 bg-gray-300/50 flex items-center w-full justify-center z-50' onClick={() => setIsOpen({ type: 'create', open: false })}>
             <div className='bg-white p-6 rounded shadow-lg w-md' onClick={(e) => e.stopPropagation()}>
-
                 <form onSubmit={handleSubmit} className='space-y-4'>
                     <h2 className='text-xl font-bold text-center'>{type === 'create' ? 'Create Employee' : 'Edit Employee'}</h2>
 
@@ -35,7 +35,7 @@ const EmployeeForm = ({ type, employee, onSubmit, isLoading, setIsOpen }) => {
 
                     <div>
                         <label htmlFor="phoneNumber">Phone Number</label>
-                        <input id='phoneNumber' type='text' className='border rounded w-full p-2' value={employeeData.phoneNumber} placeholder='Phone Number' required onChange={(e) => setEmployeeData({ ...employeeData, phoneNumber: e.target.value })} />
+                        <input id='phoneNumber' type='tel' className='border rounded w-full p-2' pattern="(84|0[3|5|7|8|9])+([0-9]{8})" value={employeeData.phoneNumber} placeholder='Phone Number' required onChange={(e) => setEmployeeData({ ...employeeData, phoneNumber: e.target.value })} />
                     </div>
 
                     <div>
@@ -52,14 +52,17 @@ const EmployeeForm = ({ type, employee, onSubmit, isLoading, setIsOpen }) => {
                         <label htmlFor="role">Role</label>
                         <select id='role' className='border rounded w-full p-2' value={employeeData.role} required onChange={(e) => setEmployeeData({ ...employeeData, role: e.target.value })}>
                             <option value=''>Select Role</option>
-                            <option value='employee'>Employee</option>
-                            <option value='owner'>Owner</option>
+                            {
+                                ROLES.map((role) => (
+                                    <option key={role.value} value={role.value}>{role.label}</option>
+                                ))
+                            }
                         </select>
                     </div>
 
                     <div className='flex justify-end gap-2'>
-                        <button onClick={() => setIsOpen({ type: 'create', open: false })} className='bg-gray-300 px-4 py-2 rounded'>Close</button>
-                        <button type='submit' className='bg-blue-500 text-white px-4 py-2 rounded' disabled={isLoading}>{isLoading ? 'Loading...' : type === 'create' ? 'Create' : 'Update'}</button>
+                        <button onClick={() => setIsOpen({ type: 'create', open: false })} className='bg-gray-300 px-4 py-2 rounded cursor-pointer hover:opacity-70 transition-opacity duration-200'>Close</button>
+                        <button type='submit' className='bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:opacity-70 transition-opacity duration-200' disabled={isLoading}>{isLoading ? 'Loading...' : type === 'create' ? 'Create' : 'Update'}</button>
                     </div>
                 </form>
             </div>

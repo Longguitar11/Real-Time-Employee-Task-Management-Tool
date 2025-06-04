@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Send, Circle } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
-import useUserStore from '../stores/useUserStore';
+import { formatHour } from '../utils/formatDate';
+import axios from '../libs/axios';
 
-const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
+const ChatWindow = ({ selectedUser, currentUser, onNewMessage }) => {
+    const { id: userId, name: currentUserName, role: currentUserRole } = currentUser;
+
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [typing, setTyping] = useState(false);
@@ -12,11 +15,95 @@ const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
     const messagesEndRef = useRef(null);
     const { socket, onlineUsers } = useSocket();
 
-    const { user } = useUserStore();
-
     // Check if selected user is online
-    const isUserOnline = onlineUsers.some(user => user.userId === selectedUser.id);
+    const isUserOnline = useMemo(() => {
+        return onlineUsers.some(user => user.userId === selectedUser.id);
+    }, [selectedUser, onlineUsers])
 
+    const fetchChatHistory = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(
+                `/messages/history/${userId}/${selectedUser?.id}`
+            );
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Error fetching chat history:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const markMessagesAsRead = async () => {
+        try {
+            await axios.post('/messages/mark-read',
+                {
+                    senderId: selectedUser.id,
+                    receiverId: userId
+                }
+            );
+        } catch (error) {
+            console.error('Error marking messages as read:', error);
+        }
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView();
+    };
+
+    const handleSendMessage = (e) => {
+        e.preventDefault();
+
+        if (!newMessage.trim() || !socket) return;
+
+        const messageData = {
+            senderId: userId,
+            receiverId: selectedUser?.id,
+            message: newMessage.trim(),
+            senderName: currentUserName,
+            senderRole: currentUserRole
+        };
+
+        socket.emit('sendMessage', messageData);
+        setNewMessage('');
+
+        // Stop typing indicator
+        if (typing) {
+            socket.emit('stopTyping', {
+                senderId: userId,
+                receiverId: selectedUser.id
+            });
+
+            setTyping(false);
+        }
+    };
+
+    const handleTyping = (e) => {
+        setNewMessage(e.target.value);
+
+        if (!typing && socket && e.target.value.trim()) {
+            setTyping(true);
+            socket.emit('typing', {
+                senderId: userId,
+                receiverId: selectedUser.id,
+                senderName: currentUserName
+            });
+        }
+
+        // Clear typing after 3 seconds of no typing
+        clearTimeout(window.typingTimer);
+        window.typingTimer = setTimeout(() => {
+            if (typing && socket) {
+                socket.emit('stopTyping', {
+                    senderId: userId,
+                    receiverId: selectedUser.id
+                });
+                setTyping(false);
+            }
+        }, 3000);
+    };
+
+    // USE EFFECT
     useEffect(() => {
         if (selectedUser) {
             fetchChatHistory();
@@ -33,21 +120,21 @@ const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
                     // Mark as read immediately if chat is open
                     markMessagesAsRead();
                     // Refresh conversations list
-                    if (onNewMessage) onNewMessage();
                 }
+
+                console.log('receive message')
+
+                onNewMessage(message.receiverId);
             });
 
             socket.on('messageConfirmed', (message) => {
-                // Message was sent successfully
-                console.log('Message confirmed:', message.id);
-
                 // Add the sent message to current chat if it's for this conversation
-                if (message.senderId === currentUserId && message.receiverId === selectedUser.id) {
+                if (message.senderId === userId && message.receiverId === selectedUser.id) {
                     setMessages(prev => [...prev, message]);
                 }
 
                 // Refresh conversations list
-                if (onNewMessage) onNewMessage();
+                onNewMessage(userId);
             });
 
             socket.on('userTyping', (data) => {
@@ -81,95 +168,6 @@ const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
         scrollToBottom();
     }, [messages]);
 
-    const fetchChatHistory = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(
-                `http://localhost:5000/api/messages/history/${currentUserId}/${selectedUser?.id}`
-            );
-            const data = await response.json();
-            console.log({ data })
-            setMessages(data);
-        } catch (error) {
-            console.error('Error fetching chat history:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const markMessagesAsRead = async () => {
-        try {
-            await fetch('http://localhost:5000/api/messages/mark-read', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    senderId: selectedUser.id,
-                    receiverId: currentUserId
-                })
-            });
-        } catch (error) {
-            console.error('Error marking messages as read:', error);
-        }
-    };
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    const handleSendMessage = (e) => {
-        e.preventDefault();
-
-        if (!newMessage.trim() || !socket) return;
-
-        const messageData = {
-            senderId: currentUserId,
-            receiverId: selectedUser?.id,
-            message: newMessage.trim(),
-            senderName: user?.name,
-            senderRole: user?.role
-        };
-
-        socket.emit('sendMessage', messageData);
-        setNewMessage('');
-
-        // Stop typing indicator
-        if (typing) {
-            socket.emit('stopTyping', {
-                senderId: currentUserId,
-                receiverId: selectedUser.id
-            });
-
-            setTyping(false);
-        }
-    };
-
-    const handleTyping = (e) => {
-        setNewMessage(e.target.value);
-
-        if (!typing && socket && e.target.value.trim()) {
-            setTyping(true);
-            socket.emit('typing', {
-                senderId: currentUserId,
-                receiverId: selectedUser.id,
-                senderName: user?.name
-            });
-        }
-
-        // Clear typing after 3 seconds of no typing
-        clearTimeout(window.typingTimer);
-        window.typingTimer = setTimeout(() => {
-            if (typing && socket) {
-                socket.emit('stopTyping', {
-                    senderId: currentUserId,
-                    receiverId: selectedUser.id
-                });
-                setTyping(false);
-            }
-        }, 3000);
-    };
-
     if (loading) {
         return (
             <div className='bg-white rounded shadow h-full flex items-center justify-center'>
@@ -184,7 +182,14 @@ const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
             <div className='bg-gray-100 p-4 rounded-t border-b'>
                 <div className='flex items-center justify-between'>
                     <div>
-                        <h2 className='text-xl font-semibold'>{selectedUser.name}</h2>
+                        <div className='flex gap-4 items-center'>
+                            <h2 className='text-xl font-semibold'>{selectedUser.name}</h2>
+                            {isTyping && (
+                                <p className='text-sm text-gray-500 italic'>
+                                    Typing...
+                                </p>
+                            )}
+                        </div>
                         <div className='flex items-center gap-2'>
                             <Circle
                                 className={`w-3 h-3 ${isUserOnline ? 'text-green-500 fill-current' : 'text-gray-400'}`}
@@ -202,11 +207,7 @@ const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
                         )}
                     </div>
                 </div>
-                {isTyping && (
-                    <p className='text-sm text-gray-500 italic mt-2'>
-                        {selectedUser.name} is typing...
-                    </p>
-                )}
+
             </div>
 
             {/* Messages */}
@@ -219,21 +220,18 @@ const ChatWindow = ({ selectedUser, currentUserId, onNewMessage }) => {
                     messages?.map((message) => (
                         <div
                             key={message.id}
-                            className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${message.senderId === userId ? 'justify-end' : 'justify-start'}`}
                         >
                             <div
-                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.senderId === currentUserId
-                                        ? 'bg-blue-500 text-white'
-                                        : 'bg-gray-200 text-gray-800'
+                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.senderId === userId
+                                    ? 'bg-blue-500 text-white text-right'
+                                    : 'bg-gray-200 text-gray-800'
                                     }`}
                             >
                                 <p className='break-words'>{message.message}</p>
-                                <p className={`text-xs mt-1 ${message.senderId === currentUserId ? 'text-blue-100' : 'text-gray-500'
+                                <p className={`text-xs mt-1 ${message.senderId === userId ? 'text-blue-100' : 'text-gray-500'
                                     }`}>
-                                    {message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    }) : 'Sending...'}
+                                    {message.timestamp ? formatHour(message.timestamp) : 'Sending...'}
                                 </p>
                             </div>
                         </div>

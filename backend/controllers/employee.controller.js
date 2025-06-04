@@ -49,7 +49,7 @@ export const createEmployee = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const snapshot = await db.collection('users').get();
+        const snapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
         const users = snapshot.docs.map(doc => doc.data());
 
         res.json({ success: true, users });
@@ -61,7 +61,7 @@ export const getAllUsers = async (req, res) => {
 
 export const getAllEmployees = async (req, res) => {
     try {
-        const snapshot = await db.collection('users').where('role', '==', 'employee').get();
+        const snapshot = await db.collection('users').where('role', '==', 'employee').orderBy('createdAt', 'desc').get();
         const employees = snapshot.docs.map(doc => doc.data());
 
         res.json({ success: true, employees });

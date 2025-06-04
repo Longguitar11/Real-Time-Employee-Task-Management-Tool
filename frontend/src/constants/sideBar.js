@@ -1,25 +1,25 @@
 export const SIDEBAR_OWNER_ITEMS = [
     {
-        name: 'Manage Employee',
+        name: 'Manage Employees',
         path: '/',
     },
     {
-        name: 'Manage Task',
+        name: 'Manage Tasks',
         path: '/manage-task',
     },
     {
-        name: 'Message',
+        name: 'Messages',
         path: '/message',
     },
 ]
 
 export const SIDEBAR_EMPLOYEE_ITEMS = [
     {
-        name: 'Manage Task',
+        name: 'My Tasks',
         path: '/',
     },
     {
-        name: 'Message',
+        name: 'Messages',
         path: '/message',
     },
 ]

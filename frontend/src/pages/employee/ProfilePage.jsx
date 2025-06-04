@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
+import { User, Mail, Phone, Building, Briefcase, Edit3, Save, X } from 'lucide-react'
 import useUserStore from '../../stores/useUserStore'
-import { User, Mail, Phone, Building, Briefcase, Edit3, Camera, Save, X } from 'lucide-react'
-import userEmployeeStore from '../../stores/useEmployeeStore'
-import LoadingSpinner from '../../components/LoadingSpinner'
 import { DEPARTMENTS } from '../../constants/departments'
+import { ROLES } from '../../constants/roles'
+
 
 const ProfilePage = () => {
   const { user, editProfile, loading } = useUserStore()
@@ -14,6 +14,7 @@ const ProfilePage = () => {
     email: user?.email || '',
     phoneNumber: user?.phoneNumber || '',
     department: user?.department || '',
+    role: user?.role || ''
   })
 
   const handleInputChange = (e) => {
@@ -39,6 +40,7 @@ const ProfilePage = () => {
       email: user?.email || '',
       phoneNumber: user?.phoneNumber || '',
       department: user?.department || '',
+      role: user?.role || ''
     })
     setIsEditing(false);
   }
@@ -194,7 +196,27 @@ const ProfilePage = () => {
                   <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
                   Role
                 </label>
-                <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">{user?.role}</p>
+                {
+                  isEditing && user?.role === 'owner' ? (
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Role</option>
+                      {
+                        ROLES.map((role) => (
+                          <option key={role.value} value={role.value}>
+                            {role.label}
+                          </option>
+                        ))
+                      }
+                    </select>
+                  ) : (
+                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">{user?.role}</p>
+                  )
+                }
               </div>
             </div>
           </div>

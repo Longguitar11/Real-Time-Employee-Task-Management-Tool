@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { TASK_STATUS } from '../constants/taskStatus';
 
 const TaskForm = ({ type, employees, task, onSubmit, isLoading, setIsOpen }) => {
 
@@ -6,7 +7,7 @@ const TaskForm = ({ type, employees, task, onSubmit, isLoading, setIsOpen }) => 
         name: task?.name || '',
         description: task?.description || '',
         assignedTo: task?.assignedTo || '',
-        status: task?.status || '',
+        status: task?.status || 'todo',
         deadline: task?.deadline || ''
     });
 
@@ -47,10 +48,11 @@ const TaskForm = ({ type, employees, task, onSubmit, isLoading, setIsOpen }) => 
                     <div>
                         <label htmlFor="status">Status</label>
                         <select id='status' className='border rounded w-full p-2' value={taskData.status} required onChange={(e) => setTaskData({ ...taskData, status: e.target.value })}>
-                            <option value=''>Select Status</option>
-                            <option value='todo'>Todo</option>
-                            <option value='doing'>Doing</option>
-                            <option value='done'>Done</option>
+                            {
+                                TASK_STATUS.map((status) => (
+                                    <option key={status.value} value={status.value}>{status.label}</option>
+                                ))
+                            }
                         </select>
                     </div>
 
@@ -60,8 +62,8 @@ const TaskForm = ({ type, employees, task, onSubmit, isLoading, setIsOpen }) => 
                     </div>
 
                     <div className='flex justify-end gap-2'>
-                        <button onClick={() => setIsOpen({ type: 'create', open: false })} className='bg-gray-300 px-4 py-2 rounded'>Close</button>
-                        <button type='submit' className='bg-blue-500 text-white px-4 py-2 rounded' disabled={isLoading}>{isLoading ? 'Loading...' : type === 'create' ? 'Create' : 'Update'}</button>
+                        <button onClick={() => setIsOpen({ type: 'create', open: false })} className='bg-gray-300 px-4 py-2 rounded cursor-pointer hover:opacity-70 transition-all duration-200'>Close</button>
+                        <button type='submit' className='bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:opacity-70 transition-all duration-200' disabled={isLoading}>{isLoading ? 'Loading...' : type === 'create' ? 'Create' : 'Update'}</button>
                     </div>
                 </form>
             </div>

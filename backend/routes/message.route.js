@@ -4,13 +4,11 @@ import { db } from '../config/firebase-admin.js';
 
 const router = Router();
 
-// Replace the history route with this version:
 router.get('/history/:userId1/:userId2', async (req, res) => {
     const { userId1, userId2 } = req.params;
     const { limit = 50 } = req.query;
 
     try {
-        // Get all messages and filter in JavaScript to avoid index requirements
         const allMessagesSnapshot = await db.collection('messages').get();
 
         const conversationId = [userId1, userId2].sort().join('_');
@@ -22,11 +20,9 @@ router.get('/history/:userId1/:userId2', async (req, res) => {
                 timestamp: doc.data().timestamp?.toDate()
             }))
             .filter(msg => {
-                // Check if message has conversationId (new format)
                 if (msg.conversationId) {
                     return msg.conversationId === conversationId;
                 }
-                // Fallback to old format
                 return (msg.senderId === userId1 && msg.receiverId === userId2) ||
                     (msg.senderId === userId2 && msg.receiverId === userId1);
             })
@@ -41,12 +37,10 @@ router.get('/history/:userId1/:userId2', async (req, res) => {
     }
 });
 
-// Replace the conversations route with this simplified version:
 router.get('/conversations/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Get all messages and filter in JavaScript to avoid index requirements
         const allMessagesSnapshot = await db.collection('messages').get();
 
         const userMessages = allMessagesSnapshot.docs
@@ -76,9 +70,10 @@ router.get('/conversations/:userId', async (req, res) => {
                 conversations[partnerId] = {
                     partnerId,
                     partnerName,
+                    isMeSend: msg.senderId === userId,
                     lastMessage: msg.message,
                     timestamp: msg.timestamp,
-                    unreadCount: 0
+                    read: msg.read
                 };
             }
         });
@@ -93,12 +88,10 @@ router.get('/conversations/:userId', async (req, res) => {
     }
 });
 
-// Replace unread route:
 router.get('/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Get all messages and filter in JavaScript
         const allMessagesSnapshot = await db.collection('messages').get();
 
         const unreadMessages = allMessagesSnapshot.docs
@@ -126,7 +119,6 @@ router.get('/unread/:userId', async (req, res) => {
     }
 });
 
-// Replace mark-read route:
 router.post('/mark-read', async (req, res) => {
     try {
         const { senderId, receiverId } = req.body;
@@ -159,43 +151,6 @@ router.post('/mark-read', async (req, res) => {
         res.json({
             success: true,
             markedCount: unreadMessages.length
-        });
-    } catch (error) {
-        console.error('Error marking messages as read:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Mark messages as read
-router.post('/mark-read', async (req, res) => {
-    try {
-        const { senderId, receiverId } = req.body;
-
-        if (!senderId || !receiverId) {
-            return res.status(400).json({ error: 'senderId and receiverId are required' });
-        }
-
-        // Find all unread messages from sender to receiver
-        const unreadMessages = await db.collection('messages')
-            .where('senderId', '==', senderId)
-            .where('receiverId', '==', receiverId)
-            .where('read', '==', false)
-            .get();
-
-        // Update all to read
-        const batch = db.batch();
-        unreadMessages.docs.forEach(doc => {
-            batch.update(doc.ref, {
-                read: true,
-                readAt: admin.firestore.FieldValue.serverTimestamp()
-            });
-        });
-
-        await batch.commit();
-
-        res.json({
-            success: true,
-            markedCount: unreadMessages.size
         });
     } catch (error) {
         console.error('Error marking messages as read:', error);

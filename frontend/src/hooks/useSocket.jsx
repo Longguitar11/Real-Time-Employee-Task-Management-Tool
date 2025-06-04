@@ -69,7 +69,7 @@ export const SocketProvider = ({ children }) => {
         newSocket.close();
       };
     }
-  }, []);
+  }, [user]);
 
   return (
     <SocketContext.Provider

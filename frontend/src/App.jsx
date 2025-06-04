@@ -33,7 +33,7 @@ function App() {
   }
 
   return (
-    <div className='font-[Open_Sans]'>
+    <div className='font-montserrat'>
       <SocketProvider>
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
@@ -42,11 +42,9 @@ function App() {
             <Route index element={user?.role === "owner" ? <ManageEmployeePage /> : <TaskPage />} />
             <Route path="/manage-task" element={user?.role === "owner" && <ManageTaskPage />} />
             <Route path="/message" element={<MessagePage />} />
-            <Route path="/profile" element={user?.role === "employee" && <ProfilePage />} />
-            {/* <Route path="/task" element={user?.role === "employee" && <TaskPage />} /> */}
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path='*' element={<Navigate to="/" />} />
           </Route>
-
         </Routes>
 
         <Toaster />

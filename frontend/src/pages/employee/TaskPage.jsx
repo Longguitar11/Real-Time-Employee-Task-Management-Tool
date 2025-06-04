@@ -1,16 +1,42 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Calendar, CheckCircle, Circle, PlayCircle } from 'lucide-react';
 import { useTaskStore } from '../../stores/useTaskStore';
 import useUserStore from '../../stores/useUserStore';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatDate } from '../../utils/formatDate';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import Filter from '../../components/Filter';
+import { TASK_STATUS } from '../../constants/taskStatus';
 
 const TaskPage = () => {
   const { user } = useUserStore()
-  const { tasks, getTasksByUserId, changeTaskStatus, loading } = useTaskStore()
+  const { tasks, getTasksByUserId, changeTaskStatus, loading, actionLoading } = useTaskStore()
+
+  const [filteredTasks, setFilteredTasks] = useState(tasks || []);
+
+  const filterTasks = async (query) => {
+    if (query === '') {
+      setFilteredTasks(tasks);
+      return;
+    }
+
+    query = await query?.trim().toLowerCase();
+
+    const filteredTasks = await tasks.filter(task => {
+      return task.name.toLowerCase().includes(query) ||
+        task.description.toLowerCase().includes(query) ||
+        task.deadline.toLowerCase().includes(query) ||
+        task.status.toLowerCase().includes(query)
+    });
+
+    setFilteredTasks(filteredTasks);
+  }
 
   useEffect(() => {
-    getTasksByUserId(user.id)
+    setFilteredTasks(tasks)
+  }, [tasks])
+
+  useEffect(() => {
+    getTasksByUserId(user?.id)
   }, [])
 
   const getStatusColor = (status) => {
@@ -43,15 +69,12 @@ const TaskPage = () => {
     return new Date(deadline) < new Date() && tasks.find(t => t.deadline === deadline)?.status !== 'done'
   }
 
-  return (
-    <>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Tasks</h1>
-      </div>
+  if (loading) return <LoadingSpinner />;
 
+  return (
+    <div className='space-y-4'>
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-gray-100">
@@ -95,13 +118,11 @@ const TaskPage = () => {
         </div>
       </div>
 
+      <Filter onSearch={filterTasks} />
+
       {/* Tasks Table */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">All Tasks</h2>
-        </div>
-
-        {tasks?.length === 0 ? (
+        {filteredTasks?.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
               <CheckCircle className="w-12 h-12 text-gray-400" />
@@ -129,7 +150,7 @@ const TaskPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {tasks?.map((task) => (
+                {filteredTasks?.map((task) => (
                   <tr key={task.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -151,11 +172,10 @@ const TaskPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className={`text-sm ${
-                          isOverdue(task.deadline) 
-                            ? 'text-red-600 font-medium' 
+                        <span className={`text-sm ${isOverdue(task.deadline)
+                            ? 'text-red-600 font-medium'
                             : 'text-gray-900'
-                        }`}>
+                          }`}>
                           {formatDate(task.deadline)}
                         </span>
                         {isOverdue(task.deadline) && (
@@ -166,10 +186,10 @@ const TaskPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <select 
-                        name="status" 
+                      <select
+                        name="status"
                         id={`status-${task.id}`}
-                        value={task.status} 
+                        value={task.status}
                         onChange={(e) => changeTaskStatus(task.id, e.target.value)}
                         className={`
                           inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium
@@ -177,10 +197,15 @@ const TaskPage = () => {
                           transition-colors cursor-pointer
                           ${getStatusColor(task.status)}
                         `}
+                        disabled={actionLoading}
                       >
-                        <option value="todo">To Do</option>
-                        <option value="doing">In Progress</option>
-                        <option value="done">Completed</option>
+                        {
+                          TASK_STATUS.map((status) => (
+                            <option key={status.value} value={status.value}>
+                              {status.label}
+                            </option>
+                          ))
+                        }
                       </select>
                     </td>
                   </tr>
@@ -190,7 +215,7 @@ const TaskPage = () => {
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }
 

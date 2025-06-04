@@ -1,3 +1,4 @@
+import admin from "firebase-admin";
 import { db } from "../config/firebase-admin.js";
 
 export const createTask = async (req, res) => {
@@ -9,7 +10,8 @@ export const createTask = async (req, res) => {
       name,
       description,
       status,
-      deadline
+      deadline,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
     })
 
     docRef.update({
@@ -25,7 +27,7 @@ export const createTask = async (req, res) => {
 
 export const getAllTasks = async (req, res) => {
   try {
-    const snapshot = await db.collection('tasks').get();
+    const snapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
     const tasks = snapshot.docs.map(doc => doc.data());
     res.json({ success: true, tasks });
   } catch (error) {
