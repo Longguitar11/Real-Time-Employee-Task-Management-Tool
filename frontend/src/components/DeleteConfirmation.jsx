@@ -1,7 +1,7 @@
 const DeleteConfirmation = ({ setIsOpen, onDelete, itemName, loading }) => {
     return (
         <div className='fixed inset-0 bg-gray-300/50 flex items-center justify-center z-50' onClick={() => setIsOpen({ type: 'create', open: false })}>
-            <div className='bg-white p-6 rounded shadow-lg w-md spacey-4' onClick={(e) => e.stopPropagation()}>
+            <div className='bg-white p-6 rounded shadow-lg w-md space-y-4' onClick={(e) => e.stopPropagation()}>
                 {/* <h2 className='text-xl font-bold text-center'>Delete Confirmation</h2> */}
                 <p className=''>Are you sure you want to delete <strong>{itemName}</strong>?</p>
                 <div className='flex justify-end gap-2'>

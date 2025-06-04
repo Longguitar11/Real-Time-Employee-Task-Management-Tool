@@ -60,7 +60,8 @@ const ManageEmployeePage = () => {
         employee.email.toLowerCase().includes(query) ||
         employee.role.toLowerCase().includes(query) ||
         employee.department.toLowerCase().includes(query) ||
-        employee.phoneNumber.toLowerCase().includes(query)
+        employee.phoneNumber.toLowerCase().includes(query) ||
+        (employee.isVerified ? 'active' : 'inactive').includes(query)
     });
 
     setFilteredEmployees(filteredEmployees);

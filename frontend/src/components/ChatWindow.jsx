@@ -5,7 +5,7 @@ import { formatHour } from '../utils/formatDate';
 import axios from '../libs/axios';
 
 const ChatWindow = ({ selectedUser, currentUser, onNewMessage }) => {
-    const { id: userId, name: currentUserName, role: currentUserRole } = currentUser;
+    const { id: userId, name: currentUserName, role: currentUserRole } = currentUser || {};
 
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -132,6 +132,8 @@ const ChatWindow = ({ selectedUser, currentUser, onNewMessage }) => {
                 if (message.senderId === userId && message.receiverId === selectedUser.id) {
                     setMessages(prev => [...prev, message]);
                 }
+
+                console.log('message confirmed')
 
                 // Refresh conversations list
                 onNewMessage(userId);

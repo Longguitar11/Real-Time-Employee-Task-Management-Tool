@@ -14,7 +14,7 @@ const MessagePage = () => {
 
   const { employees, loading: employeesLoading, getAllUsers } = userEmployeeStore();
   const { user } = useUserStore();
-  const { onlineUsers, isConnected } = useSocket();
+  const { onlineUsers, isConnected, socket } = useSocket();
 
   console.log({ conversations })
 
@@ -100,6 +100,23 @@ const MessagePage = () => {
       fetchConversations(user.id);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (socket) {
+      console.log('setup socket')
+      socket.on('receiveMessage', (message) => {
+          console.log('receive message and update real time conversations')
+  
+          fetchConversations(message.receiverId);
+      }); 
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('receiveMessage');
+      }
+    }
+  }, [socket])
 
   useEffect(() => {
     getAllUsers();

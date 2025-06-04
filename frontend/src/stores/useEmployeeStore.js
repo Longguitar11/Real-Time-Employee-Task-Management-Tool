@@ -86,7 +86,7 @@ export const userEmployeeStore = create((set) => ({
         }
     },
     deleteEmployee: async (id) => {
-        set({ loading: true });
+        set({ actionLoading: true });
 
         try {
             const res = await axios.delete(`/employees/${id}`);
