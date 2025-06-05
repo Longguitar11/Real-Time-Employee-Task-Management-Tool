@@ -97,7 +97,7 @@ const ManageTaskPage = () => {
   return (
     <div className='space-y-4'>
       <div className='flex justify-between items-end'>
-        <p className='text-gray-500 font-semibold text-lg whitespace-nowrap'>{tasks?.length} Task{tasks?.length > 1 ? 's' : ''}</p>
+        <p className='text-gray-500 font-semibold text-lg whitespace-nowrap'>{filteredTasks?.length} Task{filteredTasks?.length > 1 ? 's' : ''}</p>
 
         <div className='flex gap-2 items-center'>
           <Filter onSearch={filterTasks} />

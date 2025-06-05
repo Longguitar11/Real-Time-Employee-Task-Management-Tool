@@ -79,7 +79,9 @@ const MessagePage = () => {
 
     return conversations.map(conv => {
       const partner = employees.find(emp => emp.id === conv.partnerId);
-      return partner ? { ...partner, conversation: conv } : null;
+      return partner ? 
+      { ...partner, conversation: conv.partnerId === selectedUser?.id ? { ...conv, read: true } : conv } 
+      : null;
     }).filter(Boolean);
   }, [employees, conversations]);
 
@@ -123,7 +125,7 @@ const MessagePage = () => {
   }, [])
 
   return (
-    <div className='flex gap-4 h-full'>
+    <div className='flex gap-4 h-full whitespace-nowrap'>
       {/* Conversations List */}
       <div className='w-1/3 space-y-4 overflow-y-auto'>
         <div className='text-2xl rounded p-4 bg-gray-100 shadow'>

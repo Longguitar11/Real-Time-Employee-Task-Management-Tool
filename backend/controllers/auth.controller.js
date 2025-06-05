@@ -16,15 +16,17 @@ export const createNewAccessCode = async (req, res) => {
   try {
     const accessCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Check if user already exists
-    const existingUserQuery = await db.collection('users').where('email', '==', email).get();
+    // Check if the collection is empty
+    const users = db.collection('users');
+    const allUsersSnapshot = await users.limit(1).get();
+
 
     let userDoc;
     let isNewUser = false;
 
-    if (existingUserQuery.empty) {
-      // User doesn't exist - Sign up as owner
-      const docRef = await db.collection('users').add({
+    if (allUsersSnapshot.empty) {
+      // If the collection is empty - Sign up the first user as owner
+      const docRef = await users.add({
         email,
         accessCode,
         role: 'owner',
@@ -38,14 +40,18 @@ export const createNewAccessCode = async (req, res) => {
       userDoc = docRef;
       isNewUser = true;
 
-      console.log(`New owner account created for: ${email}`);
+      console.log(`The first user has been created: ${email}`);
     } else {
       // User exists - Login (update access code)
-      userDoc = existingUserQuery.docs[0];
+      const existingUserSnapshot = await users.where('email', '==', email).limit(1).get();
 
-      await userDoc.ref.update({
-        accessCode,
-      });
+      if (existingUserSnapshot.empty) {
+        return res.status(404).json({ error: 'This email is not registered. Only existing users can log in.' });
+      }
+
+      userDoc = existingUserSnapshot.docs[0];
+
+      await userDoc.ref.update({ accessCode });
 
       console.log(`Login attempt for existing user: ${email}`);
     }

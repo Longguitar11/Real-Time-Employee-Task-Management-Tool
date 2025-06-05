@@ -81,7 +81,7 @@ const ManageEmployeePage = () => {
   return (
     <div className='space-y-4'>
       <div className='flex justify-between items-end'>
-        <p className='text-gray-500 text-lg font-semibold whitespace-nowrap'>{employees?.length} Users</p>
+        <p className='text-gray-500 text-lg font-semibold whitespace-nowrap'>{filteredEmployees?.length} Users</p>
 
         <div className='flex gap-2'>
           <Filter onSearch={filterEmployee} />

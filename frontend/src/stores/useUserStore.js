@@ -17,6 +17,8 @@ export const useUserStore = create((set) => ({
             if (res.data.success) {
                 set({ loading: false });
                 toast.success("Access code created successfully. Please check your email.", { duration: 5000 });
+
+                return res.data;
             }
         } catch (error) {
             set({ loading: false });
