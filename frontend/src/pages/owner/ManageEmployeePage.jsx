@@ -5,9 +5,11 @@ import EmployeeForm from '../../components/EmployeeForm';
 import DeleteConfirmation from '../../components/DeleteConfirmation';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Filter from '../../components/Filter';
+import useUserStore from '../../stores/useUserStore';
 
 const ManageEmployeePage = () => {
   const { employees, getAllUsers, createEmployee, updateEmployee, deleteEmployee, loading, actionLoading } = useEmployeeStore();
+  const { user, logout } = useUserStore();
 
   const [isOpen, setIsOpen] = useState({ type: 'create', open: false });
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -44,6 +46,10 @@ const ManageEmployeePage = () => {
     if (isOpen.type === 'delete') {
       await deleteEmployee(selectedEmployee.id);
       setIsOpen({ type: 'create', open: false });
+
+      if (selectedEmployee.id === user.id) {
+        logout();
+      }
     }
   }
 
@@ -84,7 +90,8 @@ const ManageEmployeePage = () => {
         <p className='text-gray-500 text-lg font-semibold whitespace-nowrap'>{filteredEmployees?.length} Users</p>
 
         <div className='flex gap-2'>
-          <Filter onSearch={filterEmployee} />
+          {employees?.length > 0 && <Filter onSearch={filterEmployee} />}
+
           <button onClick={onCreateClick}
             className='bg-blue-500 flex items-center gap-2 text-white hover:opacity-80 transition-opacity duration-200 px-4 py-2 rounded cursor-pointer whitespace-nowrap'>
             <CirclePlusIcon />

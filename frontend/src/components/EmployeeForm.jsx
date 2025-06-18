@@ -9,7 +9,7 @@ const EmployeeForm = ({ type, employee, onSubmit, isLoading, setIsOpen }) => {
         email: employee?.email || '',
         phoneNumber: employee?.phoneNumber || '',
         department: employee?.department || '',
-        role: employee?.role || ''
+        role: employee?.role || 'employee'
     });
 
     const handleSubmit = (e) => {
@@ -51,7 +51,6 @@ const EmployeeForm = ({ type, employee, onSubmit, isLoading, setIsOpen }) => {
                     <div>
                         <label htmlFor="role">Role</label>
                         <select id='role' className='border rounded w-full p-2' value={employeeData.role} required onChange={(e) => setEmployeeData({ ...employeeData, role: e.target.value })}>
-                            <option value=''>Select Role</option>
                             {
                                 ROLES.map((role) => (
                                     <option key={role.value} value={role.value}>{role.label}</option>

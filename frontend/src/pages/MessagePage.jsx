@@ -41,8 +41,6 @@ const MessagePage = () => {
   const onSelectUser = (user) => {
     setSelectedUser(user);
 
-    console.log(user)
-
     // set read to true when user is selected
     setConversations((pre) => pre.map((conv) => (conv.partnerId === user.id && !conv.read && conv.senderId !== user.id)
       ? ({ ...conv, read: true })
@@ -189,7 +187,7 @@ const MessagePage = () => {
                       </p>
                     </div>
 
-                    {!partner.conversation.read && !partner.conversation.isMeSend && <Circle className='w-4 h-4 text-blue-500 fill-current' />}
+                    {!partner.conversation.read && !partner.conversation.isMeSend && <Circle className='w-4 h-4 shrink-0 text-blue-500 fill-current' />}
                   </div>
                 ))}
               </div>

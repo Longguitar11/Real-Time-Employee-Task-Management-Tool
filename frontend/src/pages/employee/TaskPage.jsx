@@ -118,7 +118,7 @@ const TaskPage = () => {
         </div>
       </div>
 
-      <Filter onSearch={filterTasks} />
+      {tasks?.length > 0 && < Filter onSearch={filterTasks} />}
 
       {/* Tasks Table */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
@@ -173,8 +173,8 @@ const TaskPage = () => {
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                         <span className={`text-sm ${isOverdue(task.deadline)
-                            ? 'text-red-600 font-medium'
-                            : 'text-gray-900'
+                          ? 'text-red-600 font-medium'
+                          : 'text-gray-900'
                           }`}>
                           {formatDate(task.deadline)}
                         </span>

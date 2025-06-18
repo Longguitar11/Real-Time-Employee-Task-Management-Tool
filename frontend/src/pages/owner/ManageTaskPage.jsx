@@ -94,7 +94,7 @@ const ManageTaskPage = () => {
         <p className='text-gray-500 font-semibold text-lg whitespace-nowrap'>{filteredTasks?.length} Task{filteredTasks?.length > 1 ? 's' : ''}</p>
 
         <div className='flex gap-2 items-center'>
-          <Filter onSearch={filterTasks} />
+          {tasks?.length > 0 && <Filter onSearch={filterTasks} />}
 
           <button
             onClick={onCreateClick}

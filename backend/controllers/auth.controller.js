@@ -127,10 +127,14 @@ export const refreshAccessToken = async (req, res) => {
 
     // Verify the refresh token
     const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
-    const userId = decoded.userId;
+    const user = await db.collection('users').doc(decoded.userId).get();
+    
+    if(!user.exists) {
+      return res.status(400).json({ error: "Unauthorized access." });
+    }
 
     // Generate new access token
-    const accessToken = jwt.sign({ userId }, ACCESS_TOKEN_SECRET, {
+    const accessToken = jwt.sign({ userId: decoded.userId }, ACCESS_TOKEN_SECRET, {
       expiresIn: "15m",
     });
 
