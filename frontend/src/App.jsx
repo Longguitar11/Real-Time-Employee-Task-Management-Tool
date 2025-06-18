@@ -41,7 +41,7 @@ function App() {
           <Route path='/' element={<Layout />}>
             <Route index element={user?.role === "owner" ? <ManageEmployeePage /> : <TaskPage />} />
             <Route path="/manage-task" element={user?.role === "owner" && <ManageTaskPage />} />
-            <Route path="/message" element={<MessagePage />} />
+            <Route path="/message/:userId?" element={<MessagePage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path='*' element={<Navigate to="/" />} />
           </Route>

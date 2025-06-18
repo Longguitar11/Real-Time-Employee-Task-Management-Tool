@@ -1,5 +1,5 @@
+import { act, useEffect, useMemo, useState } from 'react'
 import { CircleArrowLeft } from 'lucide-react';
-import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SIDEBAR_EMPLOYEE_ITEMS, SIDEBAR_OWNER_ITEMS } from '../constants/sideBar';
 import useUserStore from '../stores/useUserStore';
@@ -7,13 +7,16 @@ import useUserStore from '../stores/useUserStore';
 const SideBar = ({ onHideSidebarClick, className }) => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const { user } = useUserStore()
+    const { user } = useUserStore();
+
     const [activeTab, setActiveTab] = useState(pathname || '/');
 
     const handleTabClick = (path) => {
         setActiveTab(path);
         navigate(path);
     }
+
+    const path = useMemo(() => pathname.split("/")[1], [pathname]);
 
     useEffect(() => {
         setActiveTab(pathname);
@@ -25,14 +28,13 @@ const SideBar = ({ onHideSidebarClick, className }) => {
                 {
                     (user?.role === "owner" ?
                         SIDEBAR_OWNER_ITEMS : SIDEBAR_EMPLOYEE_ITEMS).map(item => (
-                            <Link to={item.path} key={item.name} onClick={() => handleTabClick(item.path)} className={`block px-4 py-2 rounded hover:bg-blue-100 hover:text-blue-500 transition-colors duration-200 ${activeTab === item.path ? 'bg-blue-400 text-white' : ''}`}>
+                            <Link to={item.path} key={item.name} onClick={() => handleTabClick(item.path)} className={`block px-4 py-2 rounded hover:bg-blue-100 hover:text-blue-500 transition-colors duration-200 ${ activeTab === item.path || `/${path}` === item.path ? 'bg-blue-400 text-white' : ''}`}>
                                 {item.name}
                             </Link>
                         )
                         )
                 }
             </div>
-
 
             <button onClick={onHideSidebarClick} className='rounded-2xl flex justify-center items-center gap-2 cursor-pointer p-3 border-2 border-gray-100 text-gray-500 text-center hover:border-blue-100 hover:text-blue-500 transition-colors duration-200'>
                 <CircleArrowLeft className='w-8 h-8' />

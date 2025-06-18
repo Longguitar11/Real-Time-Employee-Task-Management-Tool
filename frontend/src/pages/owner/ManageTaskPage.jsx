@@ -16,8 +16,6 @@ const ManageTaskPage = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [filteredTasks, setFilteredTasks] = useState(tasks || []);
 
-  console.log(filteredTasks)
-
   const onEditClick = (task) => {
     setSelectedTask(task);
     setIsOpen({ type: 'edit', open: true });
@@ -66,8 +64,6 @@ const ManageTaskPage = () => {
       return;
     }
 
-    console.log(query)
-
     query = await query?.trim().toLowerCase();
 
     const filteredTasks = await tasks.filter(task => {
@@ -77,8 +73,6 @@ const ManageTaskPage = () => {
         task.status.toLowerCase().includes(query) ||
         employeeMap[task.assignedTo]?.name.toLowerCase().includes(query)
     });
-
-    console.log({ filteredTasks })
 
     setFilteredTasks(filteredTasks);
   }

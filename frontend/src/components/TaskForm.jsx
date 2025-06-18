@@ -57,7 +57,7 @@ const TaskForm = ({ type, employees, task, onSubmit, isLoading, setIsOpen }) => 
                     </div>
 
                     <div>
-                        <label htmlFor="deadline">deadline</label>
+                        <label htmlFor="deadline">Deadline</label>
                         <input id='deadline' type='date' className='border rounded w-full p-2' value={taskData.deadline} required onChange={(e) => setTaskData({ ...taskData, deadline: e.target.value })} />
                     </div>
 

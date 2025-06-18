@@ -47,11 +47,6 @@ const ProfilePage = () => {
 
   return (
     <>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl mb-2">Profile</h1>
-      </div>
-
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           {/* Profile Header */}
@@ -78,7 +73,7 @@ const ProfilePage = () => {
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
                   Edit Profile

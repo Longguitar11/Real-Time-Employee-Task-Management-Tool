@@ -23,9 +23,7 @@ const ChatWindow = ({ selectedUser, currentUser, onNewMessage }) => {
     const fetchChatHistory = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(
-                `/messages/history/${userId}/${selectedUser?.id}`
-            );
+            const response = await axios.get(`/messages/history/${userId}/${selectedUser?.id}`);
             setMessages(response.data);
         } catch (error) {
             console.error('Error fetching chat history:', error);

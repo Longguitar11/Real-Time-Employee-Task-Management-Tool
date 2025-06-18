@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CircleUserIcon, Circle, MessageCircle } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 import ChatWindow from '../components/ChatWindow';
 import { userEmployeeStore } from '../stores/useEmployeeStore';
 import { useSocket } from '../hooks/useSocket';
@@ -8,6 +9,10 @@ import axios from '../libs/axios';
 import { formatHour } from '../utils/formatDate';
 
 const MessagePage = () => {
+
+  const navigate = useNavigate();
+  const { userId } = useParams();
+
   const [conversations, setConversations] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [conversationsLoading, setConversationsLoading] = useState(false);
@@ -15,8 +20,6 @@ const MessagePage = () => {
   const { employees, loading: employeesLoading, getAllUsers } = userEmployeeStore();
   const { user } = useUserStore();
   const { onlineUsers, isConnected, socket } = useSocket();
-
-  console.log({ conversations })
 
   const fetchConversations = async (userId) => {
     if (!userId) {
@@ -38,12 +41,15 @@ const MessagePage = () => {
   const onSelectUser = (user) => {
     setSelectedUser(user);
 
-    setConversations((pre) => pre.map((conv) => {
-      if (conv.partnerId === user.id) {
-        return { ...conv, read: true };
-      }
-      return conv;
-    }));
+    console.log(user)
+
+    // set read to true when user is selected
+    setConversations((pre) => pre.map((conv) => (conv.partnerId === user.id && !conv.read && conv.senderId !== user.id)
+      ? ({ ...conv, read: true })
+      : conv
+    ));
+
+    navigate(`/message/${user.id}`);
   };
 
 
@@ -55,12 +61,10 @@ const MessagePage = () => {
 
   // USE MEMO
   // Show loading if either employees or conversations are loading
-  const isLoading = useMemo(() =>
-    employeesLoading || conversationsLoading,
-    [employeesLoading, conversationsLoading]);
+  const isLoading = useMemo(() => employeesLoading || conversationsLoading, [employeesLoading, conversationsLoading]);
 
 
-  // Get available users to chat with
+  // Get available users to chat
   const availableUsers = useMemo(() => {
     // Return empty array if employees is null or not an array
     if (!employees || !Array.isArray(employees)) {
@@ -79,9 +83,9 @@ const MessagePage = () => {
 
     return conversations.map(conv => {
       const partner = employees.find(emp => emp.id === conv.partnerId);
-      return partner ? 
-      { ...partner, conversation: conv.partnerId === selectedUser?.id ? { ...conv, read: true } : conv } 
-      : null;
+      return partner ?
+        { ...partner, conversation: conv.partnerId === selectedUser?.id ? { ...conv, read: true } : conv }
+        : null;
     }).filter(Boolean);
   }, [employees, conversations]);
 
@@ -105,12 +109,9 @@ const MessagePage = () => {
 
   useEffect(() => {
     if (socket) {
-      console.log('setup socket')
       socket.on('receiveMessage', (message) => {
-          console.log('receive message and update real time conversations')
-  
-          fetchConversations(message.receiverId);
-      }); 
+        fetchConversations(message.receiverId);
+      });
     }
 
     return () => {
@@ -119,6 +120,16 @@ const MessagePage = () => {
       }
     }
   }, [socket])
+
+  // set selected user when userId exists
+  useEffect(() => {
+    if (userId) {
+      const user = employees?.find((emp) => emp.id === userId);
+      if (user) {
+        setSelectedUser(user);
+      }
+    }
+  }, [employees, userId]);
 
   useEffect(() => {
     getAllUsers();
@@ -195,7 +206,10 @@ const MessagePage = () => {
                 newChatUsers.map((user) => (
                   <div
                     key={user.id}
-                    onClick={() => setSelectedUser(user)}
+                    onClick={() => {
+                      setSelectedUser(user);
+                      navigate(`/message/${user.id}`);
+                    }}
                     className={`flex items-center gap-4 p-4 bg-white rounded shadow hover:bg-gray-50 cursor-pointer transition-colors ${selectedUser?.id === user.id ? 'bg-blue-50 border-blue-200 border' : ''}`}
                   >
                     <div className='relative'>
