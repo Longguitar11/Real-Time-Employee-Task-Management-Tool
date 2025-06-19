@@ -32,7 +32,7 @@ export const SocketProvider = ({ children }) => {
           userId: user.id,
           email: user.email,
           role: user.role,
-          name: user.name
+          name: user?.name
         });
 
         // Request online users list

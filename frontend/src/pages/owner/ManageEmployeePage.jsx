@@ -9,7 +9,7 @@ import useUserStore from '../../stores/useUserStore';
 
 const ManageEmployeePage = () => {
   const { employees, getAllUsers, createEmployee, updateEmployee, deleteEmployee, loading, actionLoading } = useEmployeeStore();
-  const { user, logout } = useUserStore();
+  const { user, logout, checkAuth } = useUserStore();
 
   const [isOpen, setIsOpen] = useState({ type: 'create', open: false });
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -37,6 +37,11 @@ const ManageEmployeePage = () => {
 
     if (isOpen.type === 'edit') {
       await updateEmployee({ id: selectedEmployee.id, ...employee })
+
+      // refresh the user if the edited employee is the current user
+      if(user.id === selectedEmployee.id) {
+        checkAuth();
+      }
     }
 
     setIsOpen({ type: 'create', open: false });
